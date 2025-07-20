@@ -1,9 +1,9 @@
-use std::{collections::VecDeque, fmt::Display};
+use std::fmt::Display;
 
 use crate::{chunk::Chunk, chunk_type::ChunkType};
 
 #[derive(Debug, PartialEq, Eq)]
-struct Png {
+pub struct Png {
     signature: [u8; 8],
     chunks: Vec<Chunk>,
 }
@@ -18,11 +18,11 @@ impl Png {
         }
     }
 
-    fn append_chunk(&mut self, chunk: Chunk) {
+    pub fn append_chunk(&mut self, chunk: Chunk) {
         self.chunks.push(chunk);
     }
 
-    fn remove_first_chunk(&mut self, chunk_type: &str) -> Result<Chunk, String> {
+    pub fn remove_first_chunk(&mut self, chunk_type: &str) -> Result<Chunk, String> {
         let chunk_type_bytes: [u8; 4] = chunk_type.as_bytes().try_into().unwrap();
         let chunk_type = ChunkType::try_from(chunk_type_bytes).unwrap();
 
@@ -40,7 +40,7 @@ impl Png {
         &self.chunks
     }
 
-    fn chunk_by_type(&self, chunk_type: &str) -> Option<&Chunk> {
+    pub fn chunk_by_type(&self, chunk_type: &str) -> Option<&Chunk> {
         let chunk_type_bytes: [u8; 4] = chunk_type.as_bytes().try_into().unwrap();
         let chunk_type: ChunkType = ChunkType::try_from(chunk_type_bytes).unwrap();
         match self.chunks.iter().find(|c| c.chunk_type == chunk_type) {

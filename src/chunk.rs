@@ -22,8 +22,6 @@ pub struct Chunk {
 }
 
 impl Chunk {
-    pub const IHDR_CHUNK: [u8; 17] = [0, 0, 0, 50, 0, 0, 0, 50, 8, 6, 0, 0, 0, 30, 63, 136, 177];
-
     pub fn new(chunk_type: ChunkType, data: Vec<u8>) -> Chunk {
         let crc32 = Crc::<u32>::new(&CRC_32_CUSTOM);
         let chunk_type_and_chunk: Vec<u8> = chunk_type
@@ -124,10 +122,17 @@ impl TryFrom<&[u8]> for Chunk {
 
 impl Display for Chunk {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let data_str = match self.data_as_string() {
+            Ok(s) => s,
+            Err(_) => format!(
+                "Can't transform into string -> length: {:?}",
+                self.data().len()
+            ),
+        };
         writeln!(f, "Chunk {{",)?;
         writeln!(f, "  Length: {}", self.length())?;
         writeln!(f, "  Type: {}", self.chunk_type())?;
-        writeln!(f, "  Data: {:?}", self.data().len())?;
+        writeln!(f, "  Data: {:?}", data_str)?;
         writeln!(f, "  Crc: {}", self.crc())?;
         writeln!(f, "}}",)?;
         Ok(())
