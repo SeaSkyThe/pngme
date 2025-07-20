@@ -16,13 +16,15 @@ const CRC_32_CUSTOM: Algorithm<u32> = Algorithm {
 #[derive(Debug, PartialEq, Eq)]
 pub struct Chunk {
     data_length: u32,
-    chunk_type: ChunkType,
+    pub chunk_type: ChunkType,
     data: Vec<u8>,
     crc: u32,
 }
 
 impl Chunk {
-    fn new(chunk_type: ChunkType, data: Vec<u8>) -> Chunk {
+    pub const IHDR_CHUNK: [u8; 17] = [0, 0, 0, 50, 0, 0, 0, 50, 8, 6, 0, 0, 0, 30, 63, 136, 177];
+
+    pub fn new(chunk_type: ChunkType, data: Vec<u8>) -> Chunk {
         let crc32 = Crc::<u32>::new(&CRC_32_CUSTOM);
         let chunk_type_and_chunk: Vec<u8> = chunk_type
             .bytes()
@@ -44,7 +46,7 @@ impl Chunk {
         self.data_length
     }
 
-    fn chunk_type(&self) -> &ChunkType {
+    pub fn chunk_type(&self) -> &ChunkType {
         &self.chunk_type
     }
 
@@ -56,12 +58,12 @@ impl Chunk {
         self.crc
     }
 
-    fn data_as_string(&self) -> Result<String, String> {
+    pub fn data_as_string(&self) -> Result<String, String> {
         String::from_utf8(self.data.to_vec())
             .map_err(|err| format!("Error converting data to string: {err}"))
     }
 
-    fn as_bytes(&self) -> Vec<u8> {
+    pub fn as_bytes(&self) -> Vec<u8> {
         let chunk_type_bytes = self.chunk_type.bytes();
         self.data_length
             .to_be_bytes()
@@ -125,11 +127,7 @@ impl Display for Chunk {
         writeln!(f, "Chunk {{",)?;
         writeln!(f, "  Length: {}", self.length())?;
         writeln!(f, "  Type: {}", self.chunk_type())?;
-        writeln!(
-            f,
-            "  Data: {}",
-            String::from_utf8(self.data().to_vec()).unwrap()
-        )?;
+        writeln!(f, "  Data: {:?}", self.data().len())?;
         writeln!(f, "  Crc: {}", self.crc())?;
         writeln!(f, "}}",)?;
         Ok(())
